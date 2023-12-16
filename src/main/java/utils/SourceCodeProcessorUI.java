@@ -19,6 +19,7 @@ public class SourceCodeProcessorUI extends JFrame {
     private JTextField extensionsTextField;
     private JTextField keywordsTextField;
     private JLabel resultLabel;
+    private File workingDirectory;
 
     public SourceCodeProcessorUI() {
         setTitle("软件著作权-源代码统计处理工具 By qcqcqc");
@@ -33,6 +34,7 @@ public class SourceCodeProcessorUI extends JFrame {
     }
 
     private void initComponents() {
+        workingDirectory = new File("./");
         thisComponent = this;
         pathTextField = new JTextArea();
         JButton selectPathButton = new JButton("选择目录");
@@ -66,7 +68,7 @@ public class SourceCodeProcessorUI extends JFrame {
         selectPathButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             // 默认路径为当前工作路径
-            fileChooser.setCurrentDirectory(new File("./"));
+            fileChooser.setCurrentDirectory(workingDirectory);
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             fileChooser.setMultiSelectionEnabled(true);
 
@@ -111,7 +113,7 @@ public class SourceCodeProcessorUI extends JFrame {
                     // 弹出保存框，选择保存路径
                     JFileChooser fileChooser = new JFileChooser();
                     // 默认路径为当前工作路径
-                    fileChooser.setCurrentDirectory(new File("./"));
+                    fileChooser.setCurrentDirectory(workingDirectory);
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fileChooser.setMultiSelectionEnabled(false);
                     fileChooser.setSelectedFile(file);
