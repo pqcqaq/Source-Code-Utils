@@ -4,10 +4,9 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -15,6 +14,7 @@ import java.nio.file.StandardCopyOption;
  * @author qcqcqc
  */
 public class SourceCodeProcessorUI extends JFrame {
+    private static Component thisComponent;
     private JTextArea pathTextField;
     private JTextField extensionsTextField;
     private JTextField keywordsTextField;
@@ -28,7 +28,12 @@ public class SourceCodeProcessorUI extends JFrame {
         initComponents();
     }
 
+    public static Component getInstance() {
+        return thisComponent;
+    }
+
     private void initComponents() {
+        thisComponent = this;
         pathTextField = new JTextArea();
         JButton selectPathButton = new JButton("选择目录");
         extensionsTextField = new JTextField("*.java;*.vue;*.ts");
@@ -52,7 +57,7 @@ public class SourceCodeProcessorUI extends JFrame {
         add(processButton);
 
         selectPathButton.setBounds(400, 20, 120, 25);
-        pathTextField.setBounds(100, 20, 280, 100);
+        pathTextField.setBounds(80, 20, 300, 100);
         extensionsTextField.setBounds(250, 145, 270, 25);
         keywordsTextField.setBounds(250, 195, 270, 25);
         resultLabel.setBounds(150, 245, 300, 25);
@@ -60,6 +65,8 @@ public class SourceCodeProcessorUI extends JFrame {
 
         selectPathButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
+            // 默认路径为当前工作路径
+            fileChooser.setCurrentDirectory(new File("./"));
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             fileChooser.setMultiSelectionEnabled(true);
 
@@ -99,22 +106,12 @@ public class SourceCodeProcessorUI extends JFrame {
                                     ", 代码量: " + processResult.getTotalLines());
                 // 尝试保存文件
                 try {
-                    File file = new File("./result.txt");
-                    if (!file.exists()) {
-                        boolean newFile = file.createNewFile();
-                        if (!newFile) {
-                            throw new RuntimeException("Cannot create file: result.txt");
-                        }
-                    }
-                    FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8);
-                    for (String line : processResult.getProcessedLines()) {
-                        fileWriter.write(line + "\n");
-                    }
-                    fileWriter.flush();
-                    fileWriter.close();
                     System.out.println("Saved result to result.txt");
+                    File file = processResult.getProcessedFileSaved();
                     // 弹出保存框，选择保存路径
                     JFileChooser fileChooser = new JFileChooser();
+                    // 默认路径为当前工作路径
+                    fileChooser.setCurrentDirectory(new File("./"));
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fileChooser.setMultiSelectionEnabled(false);
                     fileChooser.setSelectedFile(file);

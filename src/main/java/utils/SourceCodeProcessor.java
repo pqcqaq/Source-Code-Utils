@@ -1,11 +1,11 @@
 package utils;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -21,26 +21,35 @@ public class SourceCodeProcessor {
         System.out.println("directoryPath: " + directoryPath);
         System.out.println("fileExtensions: " + Arrays.toString(fileExtensions));
         System.out.println("excludedKeywords: " + Arrays.toString(excludedKeywords));
-
         try {
             List<Path> files = Files.walk(Paths.get(directoryPath))
                     .filter(Files::isRegularFile)
                     .filter(path -> isFileWithExtensions(path, fileExtensions))
                     .toList();
-            ArrayList<String> strings = new ArrayList<>();
+            // 新建输出文件
+            Path processed = Paths.get("processed-result.txt");
+            System.out.println("processed: " + processed);
+            // 以utf-8编码写入文件，如果有则覆盖
+            FileWriter fileWriter = new FileWriter(processed.toFile(), StandardCharsets.UTF_8, false);
 
             for (Path file : files) {
                 List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
                 List<String> processedLines = processLines(lines, excludedKeywords);
-                System.out.println("processedLines: " + processedLines);
-
                 totalFiles++;
                 totalLines += processedLines.size();
-                strings.addAll(processedLines);
+                // 写入文件
+                processedLines.forEach(line -> {
+                    try {
+                        fileWriter.write(line + "\n");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
-
-            return new ProcessResult(totalFiles, totalLines, strings);
+            fileWriter.close();
+            return new ProcessResult(totalFiles, totalLines, processed.toFile());
         } catch (IOException e) {
+            // 弹出错误框
             e.printStackTrace();
             return null;
         }

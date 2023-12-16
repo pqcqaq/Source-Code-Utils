@@ -3,6 +3,7 @@ package utils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -13,5 +14,5 @@ import java.util.List;
 public class ProcessResult {
     private int totalFiles;
     private int totalLines;
-    private List<String> processedLines;
+    private File processedFileSaved;
 }
