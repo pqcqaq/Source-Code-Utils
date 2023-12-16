@@ -4,10 +4,10 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -106,7 +106,7 @@ public class SourceCodeProcessorUI extends JFrame {
                             throw new RuntimeException("Cannot create file: result.txt");
                         }
                     }
-                    FileWriter fileWriter = new FileWriter(file);
+                    FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8);
                     for (String line : processResult.getProcessedLines()) {
                         fileWriter.write(line + "\n");
                     }
@@ -117,7 +117,7 @@ public class SourceCodeProcessorUI extends JFrame {
                     JFileChooser fileChooser = new JFileChooser();
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fileChooser.setMultiSelectionEnabled(false);
-                    fileChooser.setSelectedFile(new File("result.txt"));
+                    fileChooser.setSelectedFile(file);
                     int result = fileChooser.showSaveDialog(SourceCodeProcessorUI.this);
                     if (result == JFileChooser.APPROVE_OPTION) {
                         File selectedFile = fileChooser.getSelectedFile();
@@ -134,9 +134,15 @@ public class SourceCodeProcessorUI extends JFrame {
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    // 弹出错误框
+                    JOptionPane.showMessageDialog(SourceCodeProcessorUI.this,
+                            "保存失败", "保存失败", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 resultLabel.setText("Error processing source code.");
+                // 弹出错误框
+                JOptionPane.showMessageDialog(SourceCodeProcessorUI.this,
+                        "处理源代码失败", "处理源代码失败", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
@@ -145,9 +151,9 @@ public class SourceCodeProcessorUI extends JFrame {
         FlatLightLaf.install();
 
         try {
-            UIManager.setLookAndFeel( new FlatDarkLaf());
-        } catch( Exception ex ) {
-            System.err.println( "Failed to initialize LaF" );
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize LaF");
         }
 
         SwingUtilities.invokeLater(() -> new SourceCodeProcessorUI().setVisible(true));
