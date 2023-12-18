@@ -37,7 +37,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>utils.SourceCodeProcessorUI</mainClass>
+                            <mainClass>utils.SourceCodeProcessorFrame</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

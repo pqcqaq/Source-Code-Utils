@@ -4,24 +4,24 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 
 /**
  * @author qcqcqc
  */
-public class SourceCodeProcessorUI extends JFrame {
-    private static Component thisComponent;
+public class SourceCodeProcessorFrame extends JFrame {
     private JTextArea pathTextField;
+    private JTextField excludePathTextField;
     private JTextField extensionsTextField;
     private JTextField keywordsTextField;
     private JLabel resultLabel;
     private File workingDirectory;
 
-    public SourceCodeProcessorUI() {
+    public SourceCodeProcessorFrame() {
         setTitle("软件著作权-源代码统计处理工具 By qcqcqc");
         setSize(550, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,15 +29,11 @@ public class SourceCodeProcessorUI extends JFrame {
         initComponents();
     }
 
-    public static Component getInstance() {
-        return thisComponent;
-    }
-
     private void initComponents() {
         workingDirectory = new File("./");
-        thisComponent = this;
         pathTextField = new JTextArea();
         JButton selectPathButton = new JButton("选择目录");
+        excludePathTextField = new JTextField(".git;.idea;node_modules");
         extensionsTextField = new JTextField("*.java;*.vue;*.ts");
         keywordsTextField = new JTextField("import;package");
         resultLabel = new JLabel("文件数: 0, 代码量: 0");
@@ -47,23 +43,28 @@ public class SourceCodeProcessorUI extends JFrame {
 
         setLayout(null);
 
-        add(createLabel("选择路径:", 20, 20, 120, 25));
+        int x = 20;
+        int height = 25;
+        add(createLabel("选择路径:", x, 20, 120, height));
         add(pathTextField);
         add(selectPathButton);
-        add(createLabel("文件扩展名 (以;分割):", 20, 145, 250, 25));
+        add(createLabel("排除路径 (以;分割):", x, 130, 250, height));
+        add(excludePathTextField);
+        add(createLabel("文件扩展名 (以;分割):", x, 170, 250, height));
         add(extensionsTextField);
-        add(createLabel("排除开头 (以;分割):", 20, 195, 250, 25));
+        add(createLabel("排除开头 (以;分割):", x, 210, 250, height));
         add(keywordsTextField);
-        add(createLabel("统计结果:", 20, 245, 120, 25));
+        add(createLabel("统计结果:", x, 260, 120, height));
         add(resultLabel);
         add(processButton);
 
         selectPathButton.setBounds(400, 20, 120, 25);
         pathTextField.setBounds(80, 20, 300, 100);
-        extensionsTextField.setBounds(250, 145, 270, 25);
-        keywordsTextField.setBounds(250, 195, 270, 25);
-        resultLabel.setBounds(150, 245, 300, 25);
-        processButton.setBounds(150, 295, 200, 30);
+        excludePathTextField.setBounds(250, 130, 270, 25);
+        extensionsTextField.setBounds(250, 170, 270, 25);
+        keywordsTextField.setBounds(250, 210, 270, 25);
+        resultLabel.setBounds(150, 260, 300, 25);
+        processButton.setBounds(165, 300, 200, 30);
 
         selectPathButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
@@ -72,7 +73,7 @@ public class SourceCodeProcessorUI extends JFrame {
             fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             fileChooser.setMultiSelectionEnabled(true);
 
-            int result = fileChooser.showOpenDialog(SourceCodeProcessorUI.this);
+            int result = fileChooser.showOpenDialog(SourceCodeProcessorFrame.this);
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 File[] selectedFiles = fileChooser.getSelectedFiles();
@@ -100,8 +101,9 @@ public class SourceCodeProcessorUI extends JFrame {
             String directoryPath = pathTextField.getText().trim();
             String[] fileExtensions = extensionsTextField.getText().split(";");
             String[] excludedKeywords = keywordsTextField.getText().split(";");
+            String[] split = excludePathTextField.getText().split(";");
 
-            ProcessResult processResult = SourceCodeProcessor.processSourceCode(directoryPath, fileExtensions, excludedKeywords);
+            ProcessResult processResult = SourceCodeProcessor.processSourceCode(directoryPath, split, fileExtensions, excludedKeywords);
 
             if (processResult != null) {
                 resultLabel.setText("文件数: " + processResult.getTotalFiles() +
@@ -117,30 +119,30 @@ public class SourceCodeProcessorUI extends JFrame {
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     fileChooser.setMultiSelectionEnabled(false);
                     fileChooser.setSelectedFile(file);
-                    int result = fileChooser.showSaveDialog(SourceCodeProcessorUI.this);
+                    int result = fileChooser.showSaveDialog(SourceCodeProcessorFrame.this);
                     if (result == JFileChooser.APPROVE_OPTION) {
                         File selectedFile = fileChooser.getSelectedFile();
                         if (selectedFile.exists()) {
-                            int overwrite = JOptionPane.showConfirmDialog(SourceCodeProcessorUI.this,
+                            int overwrite = JOptionPane.showConfirmDialog(SourceCodeProcessorFrame.this,
                                     "文件已存在，是否覆盖？", "文件已存在", JOptionPane.YES_NO_OPTION);
                             if (overwrite == JOptionPane.NO_OPTION) {
                                 return;
                             }
                         }
                         Files.copy(file.toPath(), selectedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        JOptionPane.showMessageDialog(SourceCodeProcessorUI.this,
+                        JOptionPane.showMessageDialog(SourceCodeProcessorFrame.this,
                                 "保存成功", "保存成功", JOptionPane.INFORMATION_MESSAGE);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println("Failed to save result." + Arrays.toString(e.getStackTrace()));
                     // 弹出错误框
-                    JOptionPane.showMessageDialog(SourceCodeProcessorUI.this,
+                    JOptionPane.showMessageDialog(SourceCodeProcessorFrame.this,
                             "保存失败", "保存失败", JOptionPane.ERROR_MESSAGE);
                 }
             } else {
                 resultLabel.setText("Error processing source code.");
                 // 弹出错误框
-                JOptionPane.showMessageDialog(SourceCodeProcessorUI.this,
+                JOptionPane.showMessageDialog(SourceCodeProcessorFrame.this,
                         "处理源代码失败", "处理源代码失败", JOptionPane.ERROR_MESSAGE);
             }
         });
@@ -155,18 +157,15 @@ public class SourceCodeProcessorUI extends JFrame {
             System.err.println("Failed to initialize LaF");
         }
 
-        SwingUtilities.invokeLater(() -> new SourceCodeProcessorUI().setVisible(true));
+        SwingUtilities.invokeLater(() -> new SourceCodeProcessorFrame().setVisible(true));
     }
 }
 
 // 测试注释用例
 /*
-123
+ * 123
 123
 123
 123
 */
 // 123123
-/**
- * 123123
- */
