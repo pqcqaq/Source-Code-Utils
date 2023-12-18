@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -16,36 +17,36 @@ import java.util.stream.Stream;
 public class SourceCodeProcessor {
 
     public static ProcessResult processSourceCode(String directoryPath, String[] fileExtensions, String[] excludedKeywords) {
-        int totalFiles = 0;
-        int totalLines = 0;
+        long totalFiles = 0;
+        long totalLines = 0;
         System.out.println("directoryPath: " + directoryPath);
         System.out.println("fileExtensions: " + Arrays.toString(fileExtensions));
         System.out.println("excludedKeywords: " + Arrays.toString(excludedKeywords));
+
         try {
             List<Path> files = Files.walk(Paths.get(directoryPath))
                     .filter(Files::isRegularFile)
                     .filter(path -> isFileWithExtensions(path, fileExtensions))
                     .toList();
+
             // 新建输出文件
             Path processed = Paths.get("processed-result.txt");
             System.out.println("processed: " + processed);
+
             // 以utf-8编码写入文件，如果有则覆盖
             FileWriter fileWriter = new FileWriter(processed.toFile(), StandardCharsets.UTF_8, false);
 
             for (Path file : files) {
-                List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
-                List<String> processedLines = processLines(lines, excludedKeywords);
+                String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+                String processedContent = processContent(content, excludedKeywords);
+
                 totalFiles++;
-                totalLines += processedLines.size();
+                totalLines += processedContent.lines().count();
+
                 // 写入文件
-                processedLines.forEach(line -> {
-                    try {
-                        fileWriter.write(line + "\n");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
+                fileWriter.write(processedContent);
             }
+
             fileWriter.close();
             return new ProcessResult(totalFiles, totalLines, processed.toFile());
         } catch (IOException e) {
@@ -53,6 +54,41 @@ public class SourceCodeProcessor {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static String processContent(String content, String[] excludedKeywords) {
+        // 包含多行注释和javaDoc注释的正则表达式
+        String mutiLineCommentRegex = "/\\*([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/";
+        // 包含单行注释的正则表达式
+        String singleLineCommentRegex = "//.*";
+
+        content = content.replaceAll(mutiLineCommentRegex, "");
+        content = content.replaceAll(singleLineCommentRegex, "");
+
+        // 将content转为以行的流
+        List<String> lines = content.lines().toList();
+        List<String> list = lines.stream().filter(SourceCodeProcessor::filterBlankLines)
+                .filter(line -> filterLine(line, excludedKeywords)).toList();
+        content = String.join("\n", list);
+
+        return content += "\n";
+    }
+
+    private static boolean filterBlankLines(String line) {
+        return !line.trim().isEmpty();
+    }
+
+    private static boolean filterLine(String line, String[] excludedKeywords) {
+        // 如果excludedKeywords为空，则不删除指定开头的行
+        if ("".equals(excludedKeywords[0])) {
+            return true;
+        }
+        for (String prefix : excludedKeywords) {
+            if (line.startsWith(prefix.trim())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isFileWithExtensions(Path path, String[] extensions) {

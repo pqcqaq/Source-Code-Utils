@@ -13,11 +13,11 @@
 ##### 2.1. 命令行参数
 
 ```shell
-java -jar Source-Code-Utils-1.0-SNAPSHOT-jar-with-.jar
+java -jar Source-Code-Utils-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ##### 2.2. 打包
-    
+
 ```shell
 mvn clean package
 ```

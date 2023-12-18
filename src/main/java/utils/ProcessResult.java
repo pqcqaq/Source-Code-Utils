@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class ProcessResult {
-    private int totalFiles;
-    private int totalLines;
+    private Long totalFiles;
+    private Long totalLines;
     private File processedFileSaved;
 }

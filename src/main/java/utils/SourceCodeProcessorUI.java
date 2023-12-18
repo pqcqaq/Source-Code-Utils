@@ -158,3 +158,15 @@ public class SourceCodeProcessorUI extends JFrame {
         SwingUtilities.invokeLater(() -> new SourceCodeProcessorUI().setVisible(true));
     }
 }
+
+// 测试注释用例
+/*
+123
+123
+123
+123
+*/
+// 123123
+/**
+ * 123123
+ */
