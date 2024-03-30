@@ -67,7 +67,7 @@ public class SourceCodeProcessor {
         // 包含多行注释和javaDoc注释的正则表达式
         String mutiLineCommentRegex = "/\\*([^*]|[\\r\\n]|(\\*+([^*/]|[\\r\\n])))*\\*+/";
         // 包含单行注释的正则表达式（以//开头，以换行符结尾）
-        String singleLineCommentRegex = "//.*\n";
+        String singleLineCommentRegex = "\\s*//.*";
 
         content = content.replaceAll(mutiLineCommentRegex, "");
         content = content.replaceAll(singleLineCommentRegex, "");
